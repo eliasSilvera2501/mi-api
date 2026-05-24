@@ -177,8 +177,6 @@ src/main/java/org/tallerjava/
 
 ## Módulo Clientes
 
-Este módulo fue implementado por el Grupo 6. Se encarga de registrar clientes,
-manejar sus medios de pago y registrar reclamos.
 
 ### Modelo de dominio
 
