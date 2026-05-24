@@ -94,38 +94,24 @@ Cada módulo guarda una copia local de los datos que necesita de otros módulos.
 
 ```mermaid
 sequenceDiagram
-    participant AppMovil as 📱 App Móvil
+    participant AppMovil as  App Móvil
     participant Clientes as Módulo Clientes
     participant Cargas as Módulo Cargas
     participant Pagos as Módulo Pagos
 
     AppMovil->>Clientes: POST /clientes/registrar
     Clientes->>Clientes: guarda Cliente en BD
-    Clientes-->>Cargas: 🔔 ClienteRegistradoEvent
-    Clientes-->>Pagos: 🔔 ClienteRegistradoEvent
+    Clientes-->>Cargas:  ClienteRegistradoEvent
+    Clientes-->>Pagos:  ClienteRegistradoEvent
     Cargas->>Cargas: guarda ClienteCarga local
     Pagos->>Pagos: guarda ClientePago local
 
     AppMovil->>Clientes: POST /clientes/{cedula}/medioPago
     Clientes->>Clientes: guarda MedioPago en BD
-    Clientes-->>Pagos: 🔔 MedioPagoAgregadoEvent
+    Clientes-->>Pagos:  MedioPagoAgregadoEvent
     Pagos->>Pagos: guarda MedioPagoPago local
 
-    AppMovil->>Cargas: POST /cargas/iniciar
-    Cargas->>Cargas: verifica ClienteCarga local
-    Cargas->>Cargas: ocupa Cargador
-    Cargas->>Cargas: crea Carga ACTIVA
-
-    Note over AppMovil,Cargas: el cliente carga su vehículo...
-
-    AppMovil->>Cargas: POST /cargas/finalizar
-    Cargas->>Cargas: finaliza Carga, calcula importe
-    Cargas->>Cargas: libera Cargador
-    Cargas-->>Pagos: 🔔 EventoCargaFinalizada
-    Pagos->>Pagos: busca ClientePago local
-    Pagos->>Pagos: busca MedioPagoPago local
-    Pagos->>Pagos: cobra con TarjetaMock o FacturaUTEMock
-    Pagos->>Pagos: guarda Pago EXITOSO o FALLIDO
+    
 ```
 
 ---
