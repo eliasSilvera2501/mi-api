@@ -116,34 +116,6 @@ sequenceDiagram
 
 ---
 
-## Estructura de paquetes
-
-```mermaid
-graph TD
-    src["src/main/java/org/tallerjava"]
-
-    src --> MC["ModuloCliente/"]
-    src --> MCA["ModuloCarga/"]
-    src --> MP["ModuloPago/"]
-    src --> INF["infraestructura/\nconfiguracion/\nApplicationConfig.java"]
-
-    MC --> MC_AP["aplicacion/\nServicioClientes.java\nimpl/ServicioClientesImpl.java"]
-    MC --> MC_DO["dominio/\nCliente.java\nClienteComun.java\nClienteProfesional.java\nMedioPago.java\nTarjeta.java\nCuentaUTE.java\nReclamo.java\nrepositorios/"]
-    MC --> MC_IN["infraestructura/\npersistencia/\nClienteRepositorioImpl.java"]
-    MC --> MC_IF["Interface/\nevento/out/\nClienteRegistradoEvent.java\nPublicadorEventoCliente.java\nMedioPagoAgregadoEvent.java\nPublicadorEventoMedioPago.java\nremota/rest/\nClienteAPI.java\ndto/\nlocal/\nInterfaceLocalCliente.java"]
-
-    MCA --> MCA_AP["aplicacion/\nServicioCarga.java\nimpl/ServicioCargaImpl.java"]
-    MCA --> MCA_DO["dominio/\nCarga.java\nCargador.java\nEstacionCarga.java\nClienteCarga.java\nrepositorios/"]
-    MCA --> MCA_IN["infraestructura/\npersistencia/\nCargaRepositorioImpl.java\nCargadorRepositorioImpl.java\nEstacionRepositorioImpl.java\nClienteCargaRepositorioImpl.java"]
-    MCA --> MCA_IF["Interface/\nevento/in/\nObserverClienteRegistrado.java\nevento/out/\nEventoCargaFinalizada.java\nPublicadorEventoCarga.java\nremota/rest/\nCargaAPI.java\ndto/\nlocal/\nInterfaceLocalCarga.java"]
-
-    MP --> MP_AP["aplicacion/\nServicioPago.java\nimpl/ServicioPagoImpl.java"]
-    MP --> MP_DO["dominio/\nPago.java\nEstadoPago.java\nClientePago.java\nMedioPagoPago.java\nrepositorios/"]
-    MP --> MP_IN["infraestructura/\npersistencia/\nPagoRepositorioImpl.java\nClientePagoRepositorioImpl.java\nMedioPagoPagoRepositorioImpl.java\nexternos/\nTarjetaMock.java\nFacturaUTEMock.java"]
-    MP --> MP_IF["Interface/\nevento/in/\nObserverClienteRegistrado.java\nObserverMedioPagoAgregado.java\nObserverCargaFinalizada.java\nremota/rest/\nPagoAPI.java\ndto/\nlocal/\nInterfaceLocalPago.java"]
-```
-
----
 
 ## Módulo Clientes
 
