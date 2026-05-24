@@ -205,6 +205,49 @@ classDiagram
 | `obtenerClientes` | Gestor web | Devuelve todos los clientes registrados |
 | `realizarReclamo` | App móvil | Registra un reclamo del cliente con comentario y fecha |
 
+### Cómo se resolvieron
+
+**registrarCliente**
+- La API recibe un `ClienteDTO` con los datos del cliente y el tipo (COMUN o PROFESIONAL)
+- El DTO es responsable de decidir qué subclase de `Cliente` construir con `build()` — 
+  si el tipo es PROFESIONAL crea un `ClienteProfesional` con su porcentaje de descuento,
+  si es COMUN crea un `ClienteComun`. Esta lógica vive en el DTO y no contamina el servicio.
+- El servicio valida que la cédula no esté ya registrada antes de persistir — 
+  si existe lanza `IllegalStateException` y la API devuelve `409 CONFLICT`
+- La contraseña se hashea con BCrypt antes de guardar — 
+  nunca se almacena en texto plano en la base de datos
+- Al finalizar se dispara `ClienteRegistradoEvent` con primitivos (cedula, nombre, tipo) —
+  sin objetos de dominio — para que Cargas y Pagos guarden su copia local del cliente
+
+**altaMedioPago**
+- La API recibe un `MedioPagoDTO` con el tipo (TARJETA o UTE) y sus datos
+- El DTO construye la subclase correcta con `build()` — `Tarjeta` o `CuentaUTE`
+- La lógica de predeterminado vive en el dominio — `Cliente.agregarMedioPago()` 
+  marca automáticamente el primer medio de pago como predeterminado sin que el 
+  servicio ni la API intervengan
+- Por seguridad, en la respuesta el número de tarjeta nunca se expone completo —
+  `MedioPagoDTO.desde()` enmascara el número mostrando solo los últimos 4 dígitos
+  usando `tarjeta.ultimosCuatroDigitos()`
+- El dígito de verificación nunca se devuelve en ninguna respuesta
+- Se dispara `MedioPagoAgregadoEvent` con el id técnico del medio de pago —
+  nunca con el número de tarjeta — para que Pagos guarde su copia local
+
+**obtenerClientes**
+- Consumido por el gestor web para administración del sistema
+- El servicio devuelve objetos de dominio `Cliente` pero la API los convierte 
+  a `ClienteDTO` antes de responder — así la contraseña hasheada nunca sale 
+  en la respuesta HTTP aunque esté en el objeto de dominio
+- La conversión se hace con `ClienteDTO.desde(cliente)` que excluye 
+  explícitamente el campo contraseña
+
+**realizarReclamo**
+- El cliente envía únicamente un comentario de texto libre
+- La fecha y hora las asigna el sistema automáticamente en el constructor 
+  de `Reclamo` con `LocalDateTime.now()` — el cliente no puede manipularla
+- El reclamo se asocia al cliente por cédula
+- El servicio verifica que el cliente existe antes de registrar el reclamo —
+  si no existe devuelve `400 BAD REQUEST`
+
 ### Eventos que produce
 
 ```mermaid
