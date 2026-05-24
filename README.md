@@ -339,45 +339,7 @@ curl http://localhost:8080/TallerJavaEquipo6/api/clientes
 
 ---
 
-## Tablas en base de datos — Módulo Clientes
 
-```mermaid
-erDiagram
-    clientes {
-        string cedula PK
-        string nombre_completo
-        string telefono
-        string contrasena
-        string tipo_cliente
-        string tipo_profesional
-        double porcentaje_descuento
-    }
-
-    medios_pago {
-        long id PK
-        string tipo_medio_pago
-        boolean predeterminado
-        string cedula_cliente FK
-        string numero
-        string titular
-        date fecha_vencimiento
-        string digito_verificacion
-        string tipo_tarjeta
-        string numero_cuenta
-    }
-
-    reclamos {
-        long id PK
-        string comentario
-        datetime fecha
-        string cedula_cliente FK
-    }
-
-    clientes ||--o{ medios_pago : "tiene"
-    clientes ||--o{ reclamos : "realiza"
-```
-
----
 
 ## Tecnologías utilizadas
 
