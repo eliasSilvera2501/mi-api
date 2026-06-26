@@ -1,368 +1,192 @@
-# Taller Java — Iteración 1
-## Sistema de Gestión de Movilidad Eléctrica
+# PokeApp — Pokédex Web
+
+Proyecto final de Aplicaciones de Internet Ricas (RIA) 2026 — Grupo 7
+
+Una Pokédex web desarrollada con Angular 21 que permite explorar Pokémon, armar tu equipo, guardar favoritos y gestionar tu perfil de usuario.
 
 ---
 
-## Introducción
+## Integrantes
 
-Sistema de gestión de movilidad eléctrica desarrollado con Jakarta EE 10, JPA/Hibernate y MariaDB.
-Permite gestionar clientes, estaciones de carga, cargas de vehículos eléctricos y pagos,
-siguiendo una arquitectura modular con bajo acoplamiento entre módulos.
-
----
-
-## Decisiones de diseño
-
-- **Modularización**: el sistema se divide en tres módulos principales — Clientes, Cargas y Pagos.
-  Cada módulo es una separación lógica independiente dentro de la aplicación.
-
-- **Bajo acoplamiento entre módulos**: los módulos se comunican exclusivamente mediante eventos CDI.
-  Ningún módulo importa clases de dominio de otro módulo.
-  Cada módulo tiene sus propias clases de dominio y su propio conjunto de tablas en la base de datos.
-
-- **Separación en capas**: cada módulo sigue una arquitectura limpia con capas bien definidas —
-  dominio, aplicación, interfaz e infraestructura.
-
-- **Priorización de lógica de negocio**: la capa de dominio es el centro de la arquitectura.
-  No conoce ninguna capa externa — ni eventos, ni HTTP, ni base de datos.
-  Solo contiene reglas de negocio.
-
-- **Persistencia**: MariaDB con JPA/Hibernate. Cada módulo gestiona sus propias tablas.
-
-- **Inyección de dependencias**: CDI (Contexts and Dependency Injection) de Jakarta EE.
-  El contenedor resuelve las dependencias en tiempo de ejecución.
+| Nombre | Cédula |
+|---|---|
+| Facundo Navarro | 5.453.703-9 |
+| Gerardo Navarro | 5.453.380-1 |
+| Mariano Ramos | 4.334.927-5 |
+| Francisco Blazevic | 4.691.399-8 |
+| Elías Silvera | 5.311.325-4 |
 
 ---
 
-## Arquitectura general
+## ¿Qué hace la app?
 
-```mermaid
-graph TD
-    AppMovil["📱 App Móvil"]
-    GestorWeb["🖥️ Gestor Web"]
-    Cargador["⚡ Cargador Físico"]
-
-    subgraph Sistema
-        subgraph ModuloClientes["Módulo Clientes"]
-            ClienteAPI["ClienteAPI (REST)"]
-            ServicioClientes["ServicioClientesImpl"]
-            DominioClientes["Dominio\nCliente / MedioPago / Reclamo"]
-            DBClientes[("MariaDB\nclientes\nmedios_pago\nreclamos")]
-        end
-
-        subgraph ModuloCargas["Módulo Cargas"]
-            CargaAPI["CargaAPI (REST)"]
-            ServicioCargas["ServicioCargaImpl"]
-            DominioCargas["Dominio\nCarga / Cargador / EstacionCarga"]
-            DBCargas[("MariaDB\ncargas\ncargadores\nestaciones_carga\ncargas_clientes")]
-        end
-
-        subgraph ModuloPagos["Módulo Pagos"]
-            PagoAPI["PagoAPI (REST)"]
-            ServicioPagos["ServicioPagoImpl"]
-            DominioPagos["Dominio\nPago / ClientePago / MedioPagoPago"]
-            DBPagos[("MariaDB\npagos\npagos_clientes\npagos_medios_pago")]
-        end
-    end
-
-    AppMovil --> ClienteAPI
-    AppMovil --> CargaAPI
-    GestorWeb --> ClienteAPI
-    GestorWeb --> CargaAPI
-    Cargador --> CargaAPI
-    GestorWeb --> PagoAPI
-
-    ClienteAPI --> ServicioClientes
-    ServicioClientes --> DominioClientes
-    DominioClientes --> DBClientes
-
-    CargaAPI --> ServicioCargas
-    ServicioCargas --> DominioCargas
-    DominioCargas --> DBCargas
-
-    PagoAPI --> ServicioPagos
-    ServicioPagos --> DominioPagos
-    DominioPagos --> DBPagos
-```
+- Explorar más de 1000 Pokémon con paginación, búsqueda y filtros por tipo
+- Ver el detalle de cada Pokémon: estadísticas, habilidades, imagen shiny y gráfico radar
+- Reproducir el sonido (cry) de cada Pokémon
+- Guardar Pokémon como favoritos y armar un equipo de hasta 6
+- Editar el perfil de usuario (nombre y ciudad)
+- Modo oscuro activable desde cualquier pantalla
+- Panel de administración para usuarios con rol admin
 
 ---
 
-## Comunicación entre módulos — Eventos CDI
-
-Los módulos no se llaman directamente. Se comunican mediante eventos CDI.
-Cada módulo guarda una copia local de los datos que necesita de otros módulos.
-
-```mermaid
-sequenceDiagram
-    participant AppMovil as  App Móvil
-    participant Clientes as Módulo Clientes
-    participant Cargas as Módulo Cargas
-    participant Pagos as Módulo Pagos
-
-    AppMovil->>Clientes: POST /clientes/registrar
-    Clientes->>Clientes: guarda Cliente en BD
-    Clientes-->>Cargas:  ClienteRegistradoEvent
-    Clientes-->>Pagos:  ClienteRegistradoEvent
-    Cargas->>Cargas: guarda ClienteCarga local
-    Pagos->>Pagos: guarda ClientePago local
-
-    AppMovil->>Clientes: POST /clientes/{cedula}/medioPago
-    Clientes->>Clientes: guarda MedioPago en BD
-    Clientes-->>Pagos:  MedioPagoAgregadoEvent
-    Pagos->>Pagos: guarda MedioPagoPago local
-
-    
-```
-
----
-
-
-## Módulo Clientes
-
-### Modelo de dominio
-
-```mermaid
-classDiagram
-    class Cliente {
-        <<abstract>>
-        -String cedula
-        -String nombreCompleto
-        -String telefono
-        -String contrasena
-        +agregarMedioPago(MedioPago)
-        +obtenerMedioPagoPredeterminado() MedioPago
-        +aplicarDescuento(double) double
-    }
-
-    class ClienteComun {
-        +aplicarDescuento(double) double
-    }
-
-    class ClienteProfesional {
-        -TipoProfesional tipoProfesional
-        -double porcentajeDescuento
-        +aplicarDescuento(double) double
-    }
-
-    class TipoProfesional {
-        <<enum>>
-        TAXI
-        UBER
-        CABIFY
-    }
-
-    class MedioPago {
-        <<abstract>>
-        -Long id
-        -boolean predeterminado
-        +describir() String
-    }
-
-    class Tarjeta {
-        -String numero
-        -String titular
-        -LocalDate fechaVencimiento
-        -String digitoVerificacion
-        -TipoTarjeta tipoTarjeta
-        +estaVigente() boolean
-        +ultimosCuatroDigitos() String
-    }
-
-    class CuentaUTE {
-        -String numeroCuenta
-    }
-
-    class TipoTarjeta {
-        <<enum>>
-        VISA
-        MASTERCARD
-        OCA
-        AMEX
-    }
-
-    class Reclamo {
-        -Long id
-        -String comentario
-        -LocalDateTime fecha
-        -String cedulaCliente
-    }
-
-    Cliente <|-- ClienteComun
-    Cliente <|-- ClienteProfesional
-    ClienteProfesional --> TipoProfesional
-    Cliente "1" --> "0..*" MedioPago
-    MedioPago <|-- Tarjeta
-    MedioPago <|-- CuentaUTE
-    Tarjeta --> TipoTarjeta
-```
-
-### Casos de uso
-
-| Caso de uso | Consumidor | Descripción |
-|-------------|------------|-------------|
-| `registrarCliente` | App móvil | Registra un nuevo cliente. Hashea la contraseña con BCrypt. Dispara `ClienteRegistradoEvent` |
-| `altaMedioPago` | App móvil | Agrega un medio de pago al cliente. El primero queda como predeterminado. Dispara `MedioPagoAgregadoEvent` |
-| `obtenerClientes` | Gestor web | Devuelve todos los clientes registrados |
-| `realizarReclamo` | App móvil | Registra un reclamo del cliente con comentario y fecha |
-
-### Cómo se resolvieron
-
-**registrarCliente**
-- La API recibe un `ClienteDTO` con los datos del cliente y el tipo (COMUN o PROFESIONAL)
-- El DTO es responsable de decidir qué subclase de `Cliente` construir con `build()` — 
-  si el tipo es PROFESIONAL crea un `ClienteProfesional` con su porcentaje de descuento,
-  si es COMUN crea un `ClienteComun`. Esta lógica vive en el DTO y no contamina el servicio.
-- El servicio valida que la cédula no esté ya registrada antes de persistir — 
-  si existe lanza `IllegalStateException` y la API devuelve `409 CONFLICT`
-- La contraseña se hashea con BCrypt antes de guardar — 
-  nunca se almacena en texto plano en la base de datos
-- Al finalizar se dispara `ClienteRegistradoEvent` con primitivos (cedula, nombre, tipo) —
-  sin objetos de dominio — para que Cargas y Pagos guarden su copia local del cliente
-
-**altaMedioPago**
-- La API recibe un `MedioPagoDTO` con el tipo (TARJETA o UTE) y sus datos
-- El DTO construye la subclase correcta con `build()` — `Tarjeta` o `CuentaUTE`
-- La lógica de predeterminado vive en el dominio — `Cliente.agregarMedioPago()` 
-  marca automáticamente el primer medio de pago como predeterminado sin que el 
-  servicio ni la API intervengan
-- Por seguridad, en la respuesta el número de tarjeta nunca se expone completo —
-  `MedioPagoDTO.desde()` enmascara el número mostrando solo los últimos 4 dígitos
-  usando `tarjeta.ultimosCuatroDigitos()`
-- El dígito de verificación nunca se devuelve en ninguna respuesta
-- Se dispara `MedioPagoAgregadoEvent` con el id técnico del medio de pago —
-  nunca con el número de tarjeta — para que Pagos guarde su copia local
-
-**obtenerClientes**
-- Consumido por el gestor web para administración del sistema
-- El servicio devuelve objetos de dominio `Cliente` pero la API los convierte 
-  a `ClienteDTO` antes de responder — así la contraseña hasheada nunca sale 
-  en la respuesta HTTP aunque esté en el objeto de dominio
-- La conversión se hace con `ClienteDTO.desde(cliente)` que excluye 
-  explícitamente el campo contraseña
-
-**realizarReclamo**
-- El cliente envía únicamente un comentario de texto libre
-- La fecha y hora las asigna el sistema automáticamente en el constructor 
-  de `Reclamo` con `LocalDateTime.now()` — el cliente no puede manipularla
-- El reclamo se asocia al cliente por cédula
-- El servicio verifica que el cliente existe antes de registrar el reclamo —
-  si no existe devuelve `400 BAD REQUEST`
-
-### Eventos que produce
-
-```mermaid
-graph LR
-    ServicioClientes["ServicioClientesImpl"]
-
-    ServicioClientes -->|"dispara"| E1["🔔 ClienteRegistradoEvent\ncedula, nombre, tipo"]
-    ServicioClientes -->|"dispara"| E2["🔔 MedioPagoAgregadoEvent\ncedulaCliente, idMedioPago\ntipoMedioPago, predeterminado"]
-
-    E1 -->|"@Observes"| OC["ObserverClienteRegistrado\n(ModuloCargas)\n→ guarda ClienteCarga"]
-    E1 -->|"@Observes"| OP["ObserverClienteRegistrado\n(ModuloPagos)\n→ guarda ClientePago"]
-    E2 -->|"@Observes"| OM["ObserverMedioPagoAgregado\n(ModuloPagos)\n→ guarda MedioPagoPago"]
-```
-
-### Endpoints REST
-
-| Método | URL | Body | Respuesta |
-|--------|-----|------|-----------|
-| `POST` | `/api/clientes/registrar` | `ClienteDTO` | `201` id del cliente |
-| `POST` | `/api/clientes/{cedula}/medioPago` | `MedioPagoDTO` | `200` ok |
-| `GET` | `/api/clientes` | — | `200` lista de clientes |
-| `POST` | `/api/clientes/{cedula}/reclamos` | String comentario | `201` id del reclamo |
-
-### Ejemplos curl
-
-**Registrar cliente común:**
-```bash
-curl -X POST http://localhost:8080/TallerJavaEquipo6/api/clientes/registrar \
-  -H "Content-Type: application/json" \
-  -d '{
-    "cedula": "12345678",
-    "nombreCompleto": "Juan Perez",
-    "telefono": "099123456",
-    "contrasena": "clave123",
-    "tipo": "COMUN"
-  }'
-```
-
-**Registrar cliente profesional:**
-```bash
-curl -X POST http://localhost:8080/TallerJavaEquipo6/api/clientes/registrar \
-  -H "Content-Type: application/json" \
-  -d '{
-    "cedula": "98765432",
-    "nombreCompleto": "Maria Garcia",
-    "telefono": "098456789",
-    "contrasena": "clave456",
-    "tipo": "PROFESIONAL",
-    "tipoProfesional": "TAXI",
-    "porcentajeDescuento": 15.0
-  }'
-```
-
-**Agregar tarjeta:**
-```bash
-curl -X POST http://localhost:8080/TallerJavaEquipo6/api/clientes/12345678/medioPago \
-  -H "Content-Type: application/json" \
-  -d '{
-    "tipo": "TARJETA",
-    "numero": "4111111111111111",
-    "titular": "Juan Perez",
-    "fechaVencimiento": "2027-12-01",
-    "digitoVerificacion": "123",
-    "tipoTarjeta": "VISA"
-  }'
-```
-
-**Agregar cuenta UTE:**
-```bash
-curl -X POST http://localhost:8080/TallerJavaEquipo6/api/clientes/12345678/medioPago \
-  -H "Content-Type: application/json" \
-  -d '{
-    "tipo": "UTE",
-    "numeroCuenta": "UTE-987654"
-  }'
-```
-
-**Realizar reclamo:**
-```bash
-curl -X POST http://localhost:8080/TallerJavaEquipo6/api/clientes/12345678/reclamos \
-  -H "Content-Type: application/json" \
-  -d '"El cargador no funciona"'
-```
-
-**Obtener todos los clientes:**
-```bash
-curl http://localhost:8080/TallerJavaEquipo6/api/clientes
-```
-
----
-
-
-
-## Tecnologías utilizadas
+## Tecnologías
 
 | Tecnología | Versión | Uso |
-|------------|---------|-----|
-| Jakarta EE | 10 | Plataforma base |
-| WildFly | 27 | Servidor de aplicaciones |
-| JPA / Hibernate | 6 | Persistencia |
-| MariaDB | — | Base de datos |
-| CDI | 4 | Inyección de dependencias y eventos |
-| JAX-RS | 3.1 | API REST |
-| BCrypt | — | Hash de contraseñas |
-| JUnit | 5 | Tests |
+|---|---|---|
+| Angular | 21.2.0 | Framework principal (SPA, rutas, guards, formularios) |
+| TypeScript | 5.9.2 | Lenguaje base del proyecto |
+| Bootstrap + SCSS | 5.3.8 | Estilos, grillas y componentes visuales |
+| Animate.css | 4.1.1 | Animaciones de entrada en tarjetas y páginas |
+| SweetAlert2 | 11.26.25 | Popups de confirmación y errores |
+| Chart.js | 4.5.1 | Gráfico radar con las estadísticas del Pokémon |
+| PokéAPI v2 | pública | Fuente de todos los datos de Pokémon |
+| LocalStorage | Web API | Favoritos, equipo y preferencias del usuario |
+| Keycloak JS | 26.2.4 | Autenticación, tokens JWT y roles |
 
 ---
 
-## Cómo ejecutar
+## Correr el proyecto en local
+
+**Requisitos previos:**
+- Node.js (compatible con Angular 21)
+- npm (el proyecto fue desarrollado con npm 11.13.0)
+- Conexión a internet (se consume PokéAPI y Keycloak en tiempo real)
+
+**Pasos:**
 
 ```bash
-# Levantar el servidor en modo desarrollo
-mvn clean package wildfly:dev
+# 1. Clonar el repositorio
+git clone https://github.com/RamosMariano/pokedex-app.git
+cd pokedex-app
 
-# El servidor queda disponible en
-http://localhost:8080/TallerJavaEquipo6
+# 2. Instalar dependencias
+npm install
+
+# 3. Levantar el servidor de desarrollo
+npm start
 ```
 
+La app queda disponible en `http://localhost:4200`
+
+---
+
+## Compilar y desplegar
+
+### Compilación
+
+Para generar el build de producción se ejecuta:
+
+```bash
+ng build
+```
+
+Los archivos compilados quedan en `dist/pokedex-app/browser/`. Este comando empaqueta toda la app en archivos estáticos (HTML, CSS, JS) que no necesitan Node ni Angular para funcionar.
+
+El proyecto tiene los límites de bundle ajustados en `angular.json` para evitar errores de compilación dado el tamaño de las dependencias (Keycloak, Chart.js, SweetAlert2, etc.):
+
+```json
+"budgets": [
+  { "type": "initial", "maximumWarning": "2mb", "maximumError": "4mb" },
+  { "type": "anyComponentStyle", "maximumWarning": "4kB", "maximumError": "8kB" }
+]
+```
+
+Si aparecen warnings amarillos durante el build, no impiden el despliegue.
+
+### Despliegue en Netlify
+
+La app está desplegada en **Netlify**, una plataforma de hosting gratuita para sitios estáticos. Se eligió por ser gratuita, no requerir configuración de servidor y permitir despliegue manual arrastrando una carpeta.
+
+**URL de la app:** https://pokedex-grupo7.netlify.app
+
+**Pasos para redesplegar:**
+
+1. Ejecutar `ng build` para generar la carpeta `dist/pokedex-app/browser/`
+
+2. Crear un archivo llamado `_redirects` (sin extensión) dentro de `dist/pokedex-app/browser/` con el siguiente contenido:
+```
+/*    /index.html    200
+```
+Este archivo es necesario para que Netlify redirija todas las rutas al `index.html` y Angular pueda manejarlas. Sin él, al ingresar directamente a cualquier ruta como `/home` o `/detail/1` aparece un error 404.
+
+3. Ingresar a [netlify.com](https://netlify.com), ir al proyecto **pokedex-grupo7** y arrastrar la carpeta `dist/pokedex-app/browser/` a la zona de despliegue del dashboard.
+
+---
+
+## Rutas de la aplicación
+
+| Ruta | Acceso | Descripción |
+|---|---|---|
+| `/home` | Público | Pokédex principal |
+| `/detail/:id` | Público | Detalle de un Pokémon |
+| `/login` | Público | Inicio de sesión |
+| `/register` | Público | Registro (redirige a Keycloak) |
+| `/favorites` | Requiere sesión | Favoritos del usuario |
+| `/myteam` | Requiere sesión | Equipo del usuario |
+| `/profile` | Requiere sesión | Perfil del usuario |
+| `/resources` | Requiere sesión | Referencias y librerías |
+| `/admin` | Solo administradores | Panel de administración |
+
+Las rutas protegidas usan `authGuard` (verifica token en LocalStorage) y `adminGuard` (verifica rol admin).
+
+---
+
+## Persistencia de datos
+
+Como la app no tiene backend propio, los datos de cada usuario se guardan en el LocalStorage del navegador:
+
+| Clave | Contenido |
+|---|---|
+| `kc_token` | Token JWT de la sesión activa |
+| `kc_refresh_token` | Refresh token de Keycloak |
+| `kc_user` | Datos del usuario (username, rol, nombre visible, ciudad) |
+| `pokemonFavoritos_{username}` | Lista de favoritos del usuario |
+| `pokeweb_equipo_{username}` | Equipo del usuario (máx. 6) |
+| `pokeweb_tema` | Preferencia de modo oscuro |
+
+---
+
+## API utilizada
+
+**PokéAPI v2** — `https://pokeapi.co/api/v2/`
+
+API pública y gratuita, no requiere registro ni API key.
+
+Endpoints usados:
+- `/pokemon?limit=1025` — listado completo
+- `/pokemon/{id}` — datos de detalle
+- `/pokemon-species/{id}` — datos de especie
+- `/type/{tipo}` — filtro por tipo elemental
+
+Documentación oficial: https://pokeapi.co/docs/v2
+
+---
+
+## Autenticación
+
+El login y registro se manejan a través de un servidor **Keycloak** alojado en `auth.fabriq.uy`. La app nunca almacena contraseñas: Keycloak valida las credenciales y devuelve un token JWT firmado. Los roles (usuario / admin) también vienen dentro del token.
+
+Documentación oficial: https://www.keycloak.org/documentation
+
+---
+
+## Capturas de pantalla
+
+| | |
+|---|---|
+| ![Login](capturas/login.png) | ![Registro](capturas/registro.png) |
+| Login | Registro |
+| ![Home](capturas/home.png) | ![Detalle](capturas/detalle.png) |
+| Pokédex principal | Detalle del Pokémon |
+| ![Favoritos](capturas/favoritos.png) | ![Perfil](capturas/perfil.png) |
+| Favoritos | Perfil de usuario |
+
+---
+
+## Repositorio
+
+[github.com/RamosMariano/pokedex-app](https://github.com/RamosMariano/pokedex-app)
+
+Docente: José Luis Brito Rodríguez  
+Entrega: 26 de junio de 2026 — `jose.brito@utec.edu.uy`
