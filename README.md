@@ -94,23 +94,13 @@ El proyecto tiene los límites de bundle ajustados en `angular.json` para evitar
 
 Si aparecen warnings amarillos durante el build, no impiden el despliegue.
 
-### Despliegue en Netlify
+### Despliegue en Git
 
-La app está desplegada en **Netlify**, una plataforma de hosting gratuita para sitios estáticos. Se eligió por ser gratuita, no requerir configuración de servidor y permitir despliegue manual arrastrando una carpeta.
 
-**URL de la app:** https://pokedex-grupo7.netlify.app
+**URL de la app:** 
 
 **Pasos para redesplegar:**
 
-1. Ejecutar `ng build` para generar la carpeta `dist/pokedex-app/browser/`
-
-2. Crear un archivo llamado `_redirects` (sin extensión) dentro de `dist/pokedex-app/browser/` con el siguiente contenido:
-```
-/*    /index.html    200
-```
-Este archivo es necesario para que Netlify redirija todas las rutas al `index.html` y Angular pueda manejarlas. Sin él, al ingresar directamente a cualquier ruta como `/home` o `/detail/1` aparece un error 404.
-
-3. Ingresar a [netlify.com](https://netlify.com), ir al proyecto **pokedex-grupo7** y arrastrar la carpeta `dist/pokedex-app/browser/` a la zona de despliegue del dashboard.
 
 ---
 
