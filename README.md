@@ -96,10 +96,13 @@ Si aparecen warnings amarillos durante el build, no impiden el despliegue.
 
 ### Despliegue en Git
 
+Para llenar
 
-**URL de la app:** 
+**URL de la app:**  Para llenar
 
 **Pasos para redesplegar:**
+
+Para llenar
 
 
 ---
