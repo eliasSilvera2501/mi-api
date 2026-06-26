@@ -2,7 +2,7 @@
 
 Proyecto final de Aplicaciones de Internet Ricas (RIA) 2026 — Grupo 7
 
-Una Pokédex web desarrollada con Angular 21 que permite explorar Pokémon, armar tu equipo, guardar favoritos y gestionar tu perfil de usuario.
+Es una Pokédex web hecha con Angular donde se puede explorar Pokémon, armar un equipo, guardar favoritos y manejar el perfil de usuario.
 
 ---
 
@@ -20,38 +20,38 @@ Una Pokédex web desarrollada con Angular 21 que permite explorar Pokémon, arma
 
 ## ¿Qué hace la app?
 
-- Explorar más de 1000 Pokémon con paginación, búsqueda y filtros por tipo
-- Ver el detalle de cada Pokémon: estadísticas, habilidades, imagen shiny y gráfico radar
-- Reproducir el sonido (cry) de cada Pokémon
-- Guardar Pokémon como favoritos y armar un equipo de hasta 6
-- Editar el perfil de usuario (nombre y ciudad)
-- Modo oscuro activable desde cualquier pantalla
-- Panel de administración para usuarios con rol admin
+- Permite explorar más de 1000 Pokémon, con búsqueda, paginación y filtros por tipo
+- Muestra el detalle de cada Pokémon: sus stats, habilidades, su versión shiny y un gráfico con sus estadísticas
+- Reproduce el sonido (cry) de cada Pokémon
+- Permite guardar Pokémon como favoritos y armar un equipo de hasta 6
+- Permite editar el perfil de usuario (nombre y ciudad)
+- Tiene un modo oscuro que se puede activar desde cualquier pantalla
+- Cuenta con un panel de administración para los usuarios con rol admin
 
 ---
 
-## Tecnologías
+## Con qué está hecho
 
-| Tecnología | Versión | Uso |
+| Tecnología | Versión | Para qué se usa |
 |---|---|---|
-| Angular | 21.2.0 | Framework principal (SPA, rutas, guards, formularios) |
-| TypeScript | 5.9.2 | Lenguaje base del proyecto |
-| Bootstrap + SCSS | 5.3.8 | Estilos, grillas y componentes visuales |
-| Animate.css | 4.1.1 | Animaciones de entrada en tarjetas y páginas |
-| SweetAlert2 | 11.26.25 | Popups de confirmación y errores |
-| Chart.js | 4.5.1 | Gráfico radar con las estadísticas del Pokémon |
-| PokéAPI v2 | pública | Fuente de todos los datos de Pokémon |
-| LocalStorage | Web API | Favoritos, equipo y preferencias del usuario |
-| Keycloak JS | 26.2.4 | Autenticación, tokens JWT y roles |
+| Angular | 21.2.0 | Es el framework principal de la app (páginas, rutas, formularios, etc.) |
+| TypeScript | 5.9.2 | El lenguaje en el que está escrito el código |
+| Bootstrap + SCSS | 5.3.8 | Para los estilos y que todo se vea ordenado |
+| Animate.css | 4.1.1 | Para las animaciones cuando aparecen las tarjetas y páginas |
+| SweetAlert2 | 11.26.25 | Para los popups de confirmación y de error |
+| Chart.js | 4.5.1 | Para el gráfico con las estadísticas de cada Pokémon |
+| PokéAPI v2 | pública | De ahí se obtiene toda la información de los Pokémon |
+| LocalStorage | — | Ahí se guardan los favoritos, el equipo y las preferencias del usuario |
+| Keycloak JS | 26.2.4 | Se encarga del login, los tokens y los roles de usuario |
 
 ---
 
-## Correr el proyecto en local
+## Cómo correrlo en local
 
 **Requisitos previos:**
-- Node.js (compatible con Angular 21)
-- npm (el proyecto fue desarrollado con npm 11.13.0)
-- Conexión a internet (se consume PokéAPI y Keycloak en tiempo real)
+- Tener Node.js instalado (compatible con Angular 21)
+- Tener npm (se desarrolló con la versión 11.13.0)
+- Conexión a internet, porque la app consulta la PokéAPI y Keycloak constantemente
 
 **Pasos:**
 
@@ -60,10 +60,10 @@ Una Pokédex web desarrollada con Angular 21 que permite explorar Pokémon, arma
 git clone https://github.com/RamosMariano/pokedex-app.git
 cd pokedex-app
 
-# 2. Instalar dependencias
+# 2. Instalar las dependencias
 npm install
 
-# 3. Levantar el servidor de desarrollo
+# 3. Levantar el servidor
 npm start
 ```
 
@@ -75,15 +75,15 @@ La app queda disponible en `http://localhost:4200`
 
 ### Compilación
 
-Para generar el build de producción se ejecuta:
+Para generar la versión final (la que se sube a un servidor) se ejecuta:
 
 ```bash
 ng build
 ```
 
-Los archivos compilados quedan en `dist/pokedex-app/browser/`. Este comando empaqueta toda la app en archivos estáticos (HTML, CSS, JS) que no necesitan Node ni Angular para funcionar.
+Esto deja todos los archivos listos en `dist/pokedex-app/browser/`. Básicamente junta todo en archivos de HTML, CSS y JS que ya no necesitan Node ni Angular para funcionar, y se pueden alojar en cualquier servidor.
 
-El proyecto tiene los límites de bundle ajustados en `angular.json` para evitar errores de compilación dado el tamaño de las dependencias (Keycloak, Chart.js, SweetAlert2, etc.):
+En el archivo `angular.json` se tuvieron que subir un poco los límites de tamaño permitido, porque con todas las librerías que se usan (Keycloak, Chart.js, SweetAlert2, etc.) la app pesa más de lo que Angular deja pasar por defecto:
 
 ```json
 "budgets": [
@@ -92,18 +92,17 @@ El proyecto tiene los límites de bundle ajustados en `angular.json` para evitar
 ]
 ```
 
-Si aparecen warnings amarillos durante el build, no impiden el despliegue.
+Si al compilar aparecen warnings en amarillo no hay problema, no impiden que la app se pueda desplegar.
 
-### Despliegue en Git
-
-Para llenar
-
-**URL de la app:**  Para llenar
-
-**Pasos para redesplegar:**
+### Despliegue
 
 Para llenar
 
+**URL de la app:** Para llenar
+
+**Pasos para volver a desplegar:**
+
+Para llenar
 
 ---
 
@@ -111,32 +110,32 @@ Para llenar
 
 | Ruta | Acceso | Descripción |
 |---|---|---|
-| `/home` | Público | Pokédex principal |
-| `/detail/:id` | Público | Detalle de un Pokémon |
+| `/home` | Público | La Pokédex principal |
+| `/detail/:id` | Público | El detalle de un Pokémon |
 | `/login` | Público | Inicio de sesión |
 | `/register` | Público | Registro (redirige a Keycloak) |
-| `/favorites` | Requiere sesión | Favoritos del usuario |
-| `/myteam` | Requiere sesión | Equipo del usuario |
-| `/profile` | Requiere sesión | Perfil del usuario |
-| `/resources` | Requiere sesión | Referencias y librerías |
-| `/admin` | Solo administradores | Panel de administración |
+| `/favorites` | Requiere sesión | Los favoritos del usuario |
+| `/myteam` | Requiere sesión | El equipo del usuario |
+| `/profile` | Requiere sesión | El perfil del usuario |
+| `/resources` | Requiere sesión | Referencias y librerías usadas |
+| `/admin` | Solo administradores | El panel de administración |
 
-Las rutas protegidas usan `authGuard` (verifica token en LocalStorage) y `adminGuard` (verifica rol admin).
+Las rutas protegidas usan un guard que revisa si hay un token guardado, y la ruta de admin además revisa que el usuario tenga el rol correspondiente.
 
 ---
 
-## Persistencia de datos
+## Dónde se guardan los datos
 
-Como la app no tiene backend propio, los datos de cada usuario se guardan en el LocalStorage del navegador:
+Como la app no tiene un backend propio, los datos de cada usuario se guardan en el LocalStorage del navegador:
 
 | Clave | Contenido |
 |---|---|
-| `kc_token` | Token JWT de la sesión activa |
-| `kc_refresh_token` | Refresh token de Keycloak |
-| `kc_user` | Datos del usuario (username, rol, nombre visible, ciudad) |
-| `pokemonFavoritos_{username}` | Lista de favoritos del usuario |
-| `pokeweb_equipo_{username}` | Equipo del usuario (máx. 6) |
-| `pokeweb_tema` | Preferencia de modo oscuro |
+| `kc_token` | El token de la sesión activa |
+| `kc_refresh_token` | El token para renovar la sesión |
+| `kc_user` | Los datos del usuario (nombre de usuario, rol, nombre visible, ciudad) |
+| `pokemonFavoritos_{username}` | La lista de favoritos del usuario |
+| `pokeweb_equipo_{username}` | El equipo del usuario (hasta 6 Pokémon) |
+| `pokeweb_tema` | Si tiene activado el modo oscuro o no |
 
 ---
 
@@ -144,13 +143,13 @@ Como la app no tiene backend propio, los datos de cada usuario se guardan en el 
 
 **PokéAPI v2** — `https://pokeapi.co/api/v2/`
 
-API pública y gratuita, no requiere registro ni API key.
+Es una API pública y gratuita, no hace falta registrarse ni tener una API key.
 
 Endpoints usados:
-- `/pokemon?limit=1025` — listado completo
-- `/pokemon/{id}` — datos de detalle
-- `/pokemon-species/{id}` — datos de especie
-- `/type/{tipo}` — filtro por tipo elemental
+- `/pokemon?limit=1025` — para el listado completo
+- `/pokemon/{id}` — para los datos de detalle
+- `/pokemon-species/{id}` — para los datos de la especie
+- `/type/{tipo}` — para filtrar por tipo
 
 Documentación oficial: https://pokeapi.co/docs/v2
 
@@ -158,10 +157,9 @@ Documentación oficial: https://pokeapi.co/docs/v2
 
 ## Autenticación
 
-El login y registro se manejan a través de un servidor **Keycloak** alojado en `auth.fabriq.uy`. La app nunca almacena contraseñas: Keycloak valida las credenciales y devuelve un token JWT firmado. Los roles (usuario / admin) también vienen dentro del token.
+El login y el registro se manejan con un servidor de **Keycloak** alojado en `auth.fabriq.uy`. La app nunca guarda contraseñas: Keycloak se encarga de validar las credenciales y devuelve un token firmado. Ahí mismo viene también el rol del usuario (si es admin o no).
 
 Documentación oficial: https://www.keycloak.org/documentation
-
 
 ---
 
