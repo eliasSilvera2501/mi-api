@@ -169,18 +169,6 @@ El login y registro se manejan a través de un servidor **Keycloak** alojado en 
 
 Documentación oficial: https://www.keycloak.org/documentation
 
----
-
-## Capturas de pantalla
-
-| | |
-|---|---|
-| ![Login](capturas/login.png) | ![Registro](capturas/registro.png) |
-| Login | Registro |
-| ![Home](capturas/home.png) | ![Detalle](capturas/detalle.png) |
-| Pokédex principal | Detalle del Pokémon |
-| ![Favoritos](capturas/favoritos.png) | ![Perfil](capturas/perfil.png) |
-| Favoritos | Perfil de usuario |
 
 ---
 
